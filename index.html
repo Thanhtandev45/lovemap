@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0d061c">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>TxT — OUR LITTLE UNIVERSE | Tân × Trân</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Dancing+Script:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Dynamic Cosmic Background Canvas -->
+  <canvas id="starfield-canvas"></canvas>
+  <div class="nebula-glow nebula-1"></div>
+  <div class="nebula-glow nebula-2"></div>
+
+  <!-- App Wrapper -->
+  <div id="app" class="app-container">
+
+    <!-- Top Navigation Header -->
+    <header class="top-header glass-card">
+      <div class="header-brand">
+        <span class="universe-sparkle">✦</span>
+        <div class="brand-text">
+          <h1 class="brand-title">TÂN <span class="heart-symbol">×</span> TRÂN</h1>
+          <p class="brand-subtitle">OUR LITTLE UNIVERSE</p>
+        </div>
+      </div>
+      
+      <div class="header-status">
+        <div id="gps-status-badge" class="status-pill gps-inactive" title="Trạng thái GPS">
+          <span class="status-dot"></span>
+          <span class="status-label">GPS: Đang chờ</span>
+        </div>
+        <div id="user-badge" class="status-pill user-badge hidden" title="Tài khoản đang đăng nhập">
+          <span class="user-avatar" id="current-user-avatar">💜</span>
+          <span class="user-name" id="current-user-name">...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area with 4 Tabs -->
+    <main class="main-content">
+
+      <!-- ========================================== -->
+      <!-- TAB 1: TRANG CHỦ (LOVE COUNTERS)           -->
+      <!-- ========================================== -->
+      <section id="tab-home" class="tab-pane active">
+        <div class="hero-quote-card glass-card">
+          <p class="quote-text">“Hai Cuộc Đời, Một Câu Chuyện”</p>
+          <div class="quote-divider">
+            <span class="divider-line"></span>
+            <span class="divider-icon">🪐</span>
+            <span class="divider-line"></span>
+          </div>
+          <p class="quote-subtext">Vũ trụ bao la hàng tỷ năm ánh sáng, kỳ diệu nhất là đã mang chúng ta đến bên nhau.</p>
+        </div>
+
+        <!-- Quick Partner Distance Banner (if locations available) -->
+        <div id="quick-distance-card" class="quick-distance-card glass-card hidden">
+          <div class="distance-header">
+            <span class="dist-icon">💫</span>
+            <span class="dist-title">Khoảng Cách Giữa Hai Ta</span>
+          </div>
+          <div class="dist-body">
+            <div class="dist-val-group">
+              <span class="dist-val" id="quick-dist-value">--</span>
+              <span class="dist-unit" id="quick-dist-unit">km</span>
+            </div>
+            <div class="dist-eta-group">
+              <span class="dist-eta-label">Ước tính di chuyển:</span>
+              <span class="dist-eta-val" id="quick-eta-value">Đang tính...</span>
+            </div>
+          </div>
+          <div class="dist-footer" id="quick-last-update">
+            Cập nhật lần cuối: --:--:--
+          </div>
+        </div>
+
+        <!-- Love Counter 1: Ngày Bắt Đầu Quen Nhau -->
+        <div class="counter-card glass-card glow-purple">
+          <div class="counter-card-header">
+            <div class="counter-badge">MỐC THỜI GIAN 1</div>
+            <h2 class="counter-title">Ngày Bắt Đầu Quen Nhau</h2>
+            <div class="counter-date-label">
+              <span class="cal-icon">🗓️</span>
+              <span>22 tháng 10, 2025</span>
+            </div>
+            <p class="counter-tagline">“Khoảnh khắc hai quỹ đạo vô tình chạm vào nhau”</p>
+          </div>
+
+          <div class="counter-display" id="counter-quen-nhau">
+            <div class="time-box">
+              <span class="time-value" id="qn-days">00</span>
+              <span class="time-label">NGÀY</span>
+            </div>
+            <div class="time-colon">:</div>
+            <div class="time-box">
+              <span class="time-value" id="qn-hours">00</span>
+              <span class="time-label">GIỜ</span>
+            </div>
+            <div class="time-colon">:</div>
+            <div class="time-box">
+              <span class="time-value" id="qn-minutes">00</span>
+              <span class="time-label">PHÚT</span>
+            </div>
+            <div class="time-colon">:</div>
+            <div class="time-box pulse-box">
+              <span class="time-value" id="qn-seconds">00</span>
+              <span class="time-label">GIÂY</span>
+            </div>
+          </div>
+
+          <div class="counter-footer">
+            <span id="qn-milestone-text">Vũ trụ đếm từng giây phút có nhau...</span>
+          </div>
+        </div>
+
+        <!-- Love Counter 2: Ngày Chính Thức Hẹn Hò -->
+        <div class="counter-card glass-card glow-violet">
+          <div class="counter-card-header">
+            <div class="counter-badge rose-badge">MỐC THỜI GIAN 2</div>
+            <h2 class="counter-title">Ngày Chính Thức Hẹn Hò</h2>
+            <div class="counter-date-label">
+              <span class="cal-icon">💖</span>
+              <span>15 tháng 09, 2026</span>
+            </div>
+            <p class="counter-tagline">“Lời hẹn ước biến hai cuộc đời thành một câu chuyện”</p>
+          </div>
+
+          <div class="counter-display" id="counter-hen-ho">
+            <div class="time-box">
+              <span class="time-value" id="hh-days">00</span>
+              <span class="time-label">NGÀY</span>
+            </div>
+            <div class="time-colon">:</div>
+            <div class="time-box">
+              <span class="time-value" id="hh-hours">00</span>
+              <span class="time-label">GIỜ</span>
+            </div>
+            <div class="time-colon">:</div>
+            <div class="time-box">
+              <span class="time-value" id="hh-minutes">00</span>
+              <span class="time-label">PHÚT</span>
+            </div>
+            <div class="time-colon">:</div>
+            <div class="time-box pulse-box">
+              <span class="time-value" id="hh-seconds">00</span>
+              <span class="time-label">GIÂY</span>
+            </div>
+          </div>
+
+          <div class="counter-footer">
+            <span id="hh-milestone-text">Từng nhịp đập chung một tần số...</span>
+          </div>
+        </div>
+
+        <!-- Cosmic Sweet Message Note -->
+        <div class="love-note-card glass-card">
+          <div class="note-icon">✨</div>
+          <div class="note-content">
+            <h3>Nhắn gửi từ Vũ Trụ</h3>
+            <p id="dynamic-love-quote">“Dù đi bao xa hay ở bất cứ nơi đâu, chỉ cần nhìn lên bầu trời, hai ta luôn hướng về một vì sao duy nhất.”</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 2: LIVE MAP (BẢN ĐỒ GPS THỰC TẾ)       -->
+      <!-- ========================================== -->
+      <section id="tab-map" class="tab-pane">
+        <div class="map-wrapper">
+          <!-- Leaflet Map Container -->
+          <div id="map"></div>
+
+          <!-- Top Overlay: Live Routing & Distance HUD -->
+          <div class="map-hud-top glass-card">
+            <div class="hud-item">
+              <span class="hud-label">Đường bộ</span>
+              <span class="hud-value" id="hud-road-distance">-- km</span>
+            </div>
+            <div class="hud-separator"></div>
+            <div class="hud-item">
+              <span class="hud-label">Đường chim bay</span>
+              <span class="hud-value" id="hud-straight-distance">-- km</span>
+            </div>
+            <div class="hud-separator"></div>
+            <div class="hud-item">
+              <span class="hud-label">Thời gian ước tính</span>
+              <span class="hud-value" id="hud-eta">--</span>
+            </div>
+          </div>
+
+          <!-- Active Trip Banner on Map (Visible when either Tan or Tran is en route) -->
+          <div id="map-active-trip-banner" class="map-trip-banner glass-card hidden">
+            <div class="trip-banner-icon">🚗💨</div>
+            <div class="trip-banner-info">
+              <div class="trip-banner-title" id="map-trip-user-title">Hành trình đang diễn ra</div>
+              <div class="trip-banner-desc" id="map-trip-user-desc">Đang di chuyển đến điểm hẹn...</div>
+            </div>
+            <button id="btn-view-trip-details" class="btn-glass-sm">Xem chi tiết</button>
+          </div>
+
+          <!-- Bottom Overlay: Partner GPS Status Card -->
+          <div class="map-hud-bottom glass-card">
+            <div class="hud-user-row">
+              <div class="user-loc-col">
+                <span class="user-loc-name"><span class="loc-dot dot-tan"></span> Tân:</span>
+                <span class="user-loc-status" id="tan-loc-status">Chưa có GPS</span>
+              </div>
+              <div class="user-loc-col">
+                <span class="user-loc-name"><span class="loc-dot dot-tran"></span> Trân:</span>
+                <span class="user-loc-status" id="tran-loc-status">Chưa có GPS</span>
+              </div>
+            </div>
+            <div class="hud-sync-row">
+              <span id="map-last-sync-label">Cập nhật: Đang kết nối...</span>
+              <span id="gps-accuracy-label">Độ chính xác: -- m</span>
+            </div>
+          </div>
+
+          <!-- Floating Map Action Buttons -->
+          <div class="map-float-actions">
+            <button id="btn-recenter-both" class="map-action-btn glass-card" title="Xem cả hai vị trí">
+              <span>🎯</span>
+            </button>
+            <button id="btn-recenter-me" class="map-action-btn glass-card" title="Về vị trí của tôi">
+              <span>📍</span>
+            </button>
+            <button id="btn-refresh-route" class="map-action-btn glass-card" title="Tính lại tuyến đường">
+              <span>🔄</span>
+            </button>
+            <button id="btn-toggle-tiles" class="map-action-btn glass-card" title="Đổi lớp bản đồ">
+              <span>🗺️</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 3: HÀNH TRÌNH (THEO DÕI CHUYẾN ĐI)     -->
+      <!-- ========================================== -->
+      <section id="tab-trip" class="tab-pane">
+        <div class="trip-container">
+          
+          <!-- Header Banner -->
+          <div class="section-header glass-card">
+            <div class="section-icon">🚀</div>
+            <div class="section-meta">
+              <h2 class="section-title">Theo Dõi Hành Trình</h2>
+              <p class="section-desc">Cùng nhau an toàn trên mọi nẻo đường</p>
+            </div>
+          </div>
+
+          <!-- Trip Status Card (Idle or In Progress) -->
+          <div id="trip-control-card" class="trip-card glass-card">
+            
+            <!-- State 1: Trip Not Started -->
+            <div id="trip-idle-state" class="trip-state">
+              <h3 class="trip-card-title">Chuẩn Bị Lên Đường</h3>
+              <p class="trip-card-desc">Chọn điểm đến để đối phương có thể dõi theo lộ trình và thời gian dự kiến bạn đến nơi.</p>
+
+              <div class="destination-picker-box">
+                <label class="input-label" for="dest-input">Điểm đến:</label>
+                <div class="dest-input-group">
+                  <input type="text" id="dest-input" class="text-input" placeholder="Nhập tên địa điểm hoặc chạm bản đồ..." />
+                  <button id="btn-pick-on-map" class="btn-glass-sm" title="Chọn trên bản đồ">📌 Chọn trên bản đồ</button>
+                </div>
+                
+                <div class="dest-coords-preview" id="dest-coords-preview">
+                  Chưa chọn tọa độ điểm đến.
+                </div>
+              </div>
+
+              <!-- Options -->
+              <div class="trip-options-group">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="chk-record-trail">
+                  <span class="checkmark"></span>
+                  <span class="checkbox-text">Ghi lại vệt đường đã đi trong chuyến đi này</span>
+                </label>
+                <p class="checkbox-hint">Mặc định tắt để bảo vệ quyền riêng tư. Chỉ lưu tọa độ vệt di chuyển khi bạn chủ động bật.</p>
+              </div>
+
+              <!-- Action Button -->
+              <button id="btn-start-trip" class="btn-primary-purple btn-glow btn-block">
+                <span>🚀</span> BẮT ĐẦU HÀNH TRÌNH
+              </button>
+            </div>
+
+            <!-- State 2: Trip Active -->
+            <div id="trip-active-state" class="trip-state hidden">
+              <div class="active-pulse-badge">
+                <span class="live-pulse"></span>
+                <span>CHUYẾN ĐI ĐANG DIỄN RA</span>
+              </div>
+
+              <div class="active-dest-header">
+                <span class="active-dest-icon">🏁</span>
+                <div class="active-dest-info">
+                  <span class="active-dest-label">Đang tới điểm hẹn:</span>
+                  <h3 class="active-dest-name" id="active-dest-name">...</h3>
+                </div>
+              </div>
+
+              <!-- Live Navigation Metrics -->
+              <div class="trip-metrics-grid">
+                <div class="metric-box glass-card">
+                  <span class="metric-label">Quãng đường còn lại</span>
+                  <span class="metric-value" id="active-trip-distance">-- km</span>
+                </div>
+                <div class="metric-box glass-card">
+                  <span class="metric-label">Thời gian dự kiến (ETA)</span>
+                  <span class="metric-value" id="active-trip-eta">-- phút</span>
+                </div>
+                <div class="metric-box glass-card">
+                  <span class="metric-label">Tốc độ hiện tại</span>
+                  <span class="metric-value" id="active-trip-speed">0 km/h</span>
+                </div>
+                <div class="metric-box glass-card">
+                  <span class="metric-label">Thời gian đã đi</span>
+                  <span class="metric-value" id="active-trip-elapsed">00:00</span>
+                </div>
+              </div>
+
+              <div class="trip-sharing-notice">
+                <span class="notice-icon">📡</span>
+                <span>Vị trí và tuyến đường đang được đồng bộ trực tiếp tới người yêu của bạn.</span>
+              </div>
+
+              <!-- End Trip Button -->
+              <button id="btn-end-trip" class="btn-danger-red btn-glow btn-block">
+                <span>⏹️</span> KẾT THÚC HÀNH TRÌNH
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Partner Trip Live Status (If Partner is Traveling) -->
+          <div id="partner-trip-card" class="trip-card glass-card partner-trip-card hidden">
+            <div class="partner-trip-header">
+              <span class="partner-avatar" id="partner-trip-avatar">🌸</span>
+              <div class="partner-trip-info">
+                <h4 id="partner-trip-name">Trân đang trên đường</h4>
+                <p id="partner-trip-desc">Đang di chuyển đến điểm đến</p>
+              </div>
+            </div>
+            <div class="partner-trip-metrics">
+              <div class="pmetric">
+                <span class="pmetric-lbl">Khoảng cách còn:</span>
+                <span class="pmetric-val" id="partner-trip-dist">-- km</span>
+              </div>
+              <div class="pmetric">
+                <span class="pmetric-lbl">Dự kiến đến nơi:</span>
+                <span class="pmetric-val" id="partner-trip-eta">-- phút</span>
+              </div>
+            </div>
+            <button id="btn-view-partner-on-map" class="btn-glass-sm btn-block">
+              🗺️ Xem lộ trình trên bản đồ
+            </button>
+          </div>
+
+          <!-- Trip Safety Notice & Tips -->
+          <div class="trip-tips-card glass-card">
+            <h4>💡 Lưu ý khi di chuyển</h4>
+            <ul>
+              <li>Giữ màn hình sáng hoặc thỉnh thoảng mở lại Chrome để GPS không bị hệ điều hành đưa vào chế độ ngủ sâu.</li>
+              <li>Khi kết thúc hành trình, trạng thái chuyến đi sẽ tự động đóng lại trên thiết bị của cả hai.</li>
+              <li>Luôn lái xe an toàn và tập trung quan sát đường đi.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 4: CÀI ĐẶT (TÀI KHOẢN & CHIA SẺ)        -->
+      <!-- ========================================== -->
+      <section id="tab-settings" class="tab-pane">
+        <div class="settings-container">
+
+          <!-- User Profile Card -->
+          <div class="settings-card glass-card">
+            <h3 class="settings-title">Hồ Sơ Của Bạn</h3>
+            <div class="user-profile-row">
+              <div class="profile-avatar" id="profile-avatar-display">💜</div>
+              <div class="profile-info">
+                <div class="profile-name" id="profile-name-display">Đang tải...</div>
+                <div class="profile-email" id="profile-email-display">Chưa đăng nhập</div>
+                <div class="profile-uid" id="profile-uid-display">UID: --</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location Sharing Controls -->
+          <div class="settings-card glass-card">
+            <h3 class="settings-title">Quyền Chia Sẻ Vị Trí</h3>
+            <p class="settings-desc">Kiểm soát việc người yêu của bạn có thể xem vị trí của bạn trên bản đồ hay không.</p>
+
+            <div class="setting-toggle-row">
+              <div class="toggle-label-group">
+                <span class="toggle-title">Bật chia sẻ vị trí</span>
+                <span class="toggle-subtitle" id="sharing-status-subtitle">Đang chia sẻ thời gian thực</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="switch-share-location" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <div class="sharing-duration-group" id="sharing-duration-group">
+              <label class="input-label">Thời hạn chia sẻ:</label>
+              <div class="duration-chips">
+                <button class="chip-btn" data-hours="1">1 giờ</button>
+                <button class="chip-btn" data-hours="4">4 giờ</button>
+                <button class="chip-btn" data-hours="8">8 giờ</button>
+                <button class="chip-btn" data-hours="24">24 giờ</button>
+                <button class="chip-btn active" data-hours="0">Luôn luôn</button>
+              </div>
+              <div class="duration-expiry-info" id="sharing-expiry-info">
+                Thời hạn: Chia sẻ liên tục (Không giới hạn)
+              </div>
+            </div>
+          </div>
+
+          <!-- GPS & Hardware Diagnostics -->
+          <div class="settings-card glass-card">
+            <h3 class="settings-title">Chẩn Đoán GPS & Thiết Bị</h3>
+            <div class="diagnostics-list">
+              <div class="diag-item">
+                <span class="diag-label">Tọa độ hiện tại:</span>
+                <span class="diag-val" id="diag-coords">Chưa có</span>
+              </div>
+              <div class="diag-item">
+                <span class="diag-label">Độ chính xác:</span>
+                <span class="diag-val" id="diag-accuracy">--</span>
+              </div>
+              <div class="diag-item">
+                <span class="diag-label">Tốc độ di chuyển:</span>
+                <span class="diag-val" id="diag-speed">--</span>
+              </div>
+              <div class="diag-item">
+                <span class="diag-label">Thời điểm ghi nhận:</span>
+                <span class="diag-val" id="diag-timestamp">--</span>
+              </div>
+            </div>
+            <button id="btn-recheck-gps" class="btn-glass-sm btn-block mt-2">
+              📡 Yêu cầu cấp lại quyền GPS
+            </button>
+          </div>
+
+          <!-- Firebase Status & Config Info -->
+          <div class="settings-card glass-card">
+            <h3 class="settings-title">Kết Nối Firebase</h3>
+            <div class="firebase-status-row">
+              <span class="fb-indicator" id="fb-connection-indicator"></span>
+              <span id="fb-connection-text">Đang kiểm tra kết nối...</span>
+            </div>
+            <p class="fb-note">
+              Website sử dụng Firebase Authentication và Firebase Realtime Database. Dữ liệu chỉ được đọc/ghi khi bạn đã đăng nhập và được bảo vệ bởi Firebase Security Rules.
+            </p>
+          </div>
+
+          <!-- Logout Button -->
+          <div class="settings-actions">
+            <button id="btn-logout" class="btn-glass-danger btn-block">
+              🚪 Đăng Xuất Khỏi Vũ Trụ
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Floating Navigation Bar -->
+    <nav class="bottom-nav glass-card">
+      <button class="nav-btn active" data-tab="tab-home">
+        <span class="nav-icon">✨</span>
+        <span class="nav-text">Trang chủ</span>
+      </button>
+      <button class="nav-btn" data-tab="tab-map">
+        <span class="nav-icon">🗺️</span>
+        <span class="nav-text">Live Map</span>
+      </button>
+      <button class="nav-btn" data-tab="tab-trip">
+        <span class="nav-icon">🚀</span>
+        <span class="nav-text">Hành trình</span>
+      </button>
+      <button class="nav-btn" data-tab="tab-settings">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-text">Cài đặt</span>
+      </button>
+    </nav>
+
+  </div> <!-- End #app -->
+
+  <!-- ========================================== -->
+  <!-- MODAL: ĐĂNG NHẬP (FIREBASE AUTH)           -->
+  <!-- ========================================== -->
+  <div id="auth-modal" class="modal-backdrop">
+    <div class="modal-card glass-card glow-purple">
+      <div class="modal-header">
+        <div class="modal-logo">🌌</div>
+        <h2 class="modal-title">CỔNG VÀO VŨ TRỤ</h2>
+        <p class="modal-subtitle">Dành riêng cho Tân & Trân</p>
+      </div>
+
+      <form id="auth-form" class="modal-form">
+        <div class="input-group">
+          <label for="login-email">Email tài khoản:</label>
+          <input type="email" id="login-email" class="text-input" placeholder="nhapemail@cuaban.com" required autocomplete="email">
+        </div>
+
+        <div class="input-group">
+          <label for="login-password">Mật khẩu:</label>
+          <input type="password" id="login-password" class="text-input" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+
+        <div id="login-error-msg" class="error-msg-box hidden"></div>
+
+        <button type="submit" id="btn-login-submit" class="btn-primary-purple btn-glow btn-block">
+          <span>💜</span> Đăng Nhập
+        </button>
+
+        <div class="modal-footer-hint">
+          <p>Chỉ hai tài khoản được cấp quyền mới có thể truy cập và theo dõi vị trí.</p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Firebase Compat CDN Scripts (v10.14.1) -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- App Core Script -->
+  <script src="script.js"></script>
+</body>
+</html>
