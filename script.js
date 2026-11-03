@@ -24,15 +24,18 @@ const firebaseConfig = {
   measurementId: "G-VTL9SG4PBB"
 };
 
+// Hỗ trợ cả 2 cách đặt tên biến để không bao giờ bị lỗi ReferenceError
+
+
 /**
  * CẤU HÌNH UID CỦA HAI TÀI KHOẢN (Lấy từ Firebase Console -> Authentication -> Users):
  * Điền UID của Tân và Trân vào đây để xác định danh tính và quyền hạn.
  */
 const AUTHORIZED_USERS = {
-  // UID của Tân trong Firebase Authentication (ví dụ: "AbCdEfGhIjKlMnOpQrStUvWxYz1")
+  // UID của Tân trong Firebase Authentication
   TAN_UID: "wuWWFPnarrcYVHnrlkw3lzLAnEx2",
   
-  // UID của Trân trong Firebase Authentication (ví dụ: "ZyXwVuTsRqPoNmLkJiHgFeDcBa2")
+  // UID của Trân trong Firebase Authentication
   TRAN_UID: "XwEWaEoNP0XSMqYcBRYkqP1lhh33"
 };
 
@@ -112,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTabNavigation();
   initSettingsUI();
   initTripUI();
+  initAuthForm(); // Luôn gắn lắng nghe submit form ngay lập tức để không bao giờ bị reload trang
   initFirebase();
   initVisibilityListener();
 });
@@ -286,11 +290,22 @@ function initTabNavigation() {
 // ==========================================================================
 // 8. FIREBASE AUTH & REALTIME DATABASE INTEGRATION
 // ==========================================================================
+function initAuthForm() {
+  const authForm = document.getElementById("auth-form");
+  if (authForm) {
+    authForm.addEventListener("submit", handleLoginSubmit);
+  }
+}
+
 function isFirebaseConfigured() {
+  const cfg = (typeof FIREBASE_CONFIG !== "undefined" ? FIREBASE_CONFIG : null) || 
+              (typeof firebaseConfig !== "undefined" ? firebaseConfig : null);
+  if (!cfg) return false;
   return (
-    FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" &&
-    FIREBASE_CONFIG.projectId !== "YOUR_PROJECT_ID" &&
-    FIREBASE_CONFIG.databaseURL !== "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com"
+    cfg.apiKey &&
+    cfg.apiKey !== "YOUR_API_KEY" &&
+    cfg.projectId &&
+    cfg.projectId !== "YOUR_PROJECT_ID"
   );
 }
 
@@ -298,33 +313,33 @@ function initFirebase() {
   const fbIndicator = document.getElementById("fb-connection-indicator");
   const fbText = document.getElementById("fb-connection-text");
 
+  const cfg = (typeof FIREBASE_CONFIG !== "undefined" ? FIREBASE_CONFIG : null) || 
+              (typeof firebaseConfig !== "undefined" ? firebaseConfig : null);
+
   if (!isFirebaseConfigured()) {
     console.warn("⚠️ Firebase chưa được cấu hình. Vui lòng điền thông tin FIREBASE_CONFIG trong script.js");
     if (fbIndicator) fbIndicator.className = "fb-indicator error";
     if (fbText) fbText.textContent = "Chưa cấu hình Firebase (Xem hướng dẫn trong script.js)";
-    
-    // Mở modal đăng nhập với hướng dẫn cấu hình
     showAuthModal(true);
     return;
+  }
+
+  // Tự động bổ sung databaseURL nếu thiếu
+  if (!cfg.databaseURL) {
+    cfg.databaseURL = `https://${cfg.projectId}-default-rtdb.asia-southeast1.firebasedatabase.app`;
   }
 
   try {
     // Khởi tạo Firebase App qua SDK Compat
     if (!firebase.apps.length) {
-      firebase.initializeApp(FIREBASE_CONFIG);
+      firebase.initializeApp(cfg);
     }
 
     if (fbIndicator) fbIndicator.className = "fb-indicator connected";
-    if (fbText) fbText.textContent = "Đã kết nối Firebase (" + FIREBASE_CONFIG.projectId + ")";
+    if (fbText) fbText.textContent = "Đã kết nối Firebase (" + cfg.projectId + ")";
 
     // Lắng nghe trạng thái đăng nhập
     firebase.auth().onAuthStateChanged(handleAuthStateChanged);
-
-    // Xử lý sự kiện Submit Form Đăng nhập
-    const authForm = document.getElementById("auth-form");
-    if (authForm) {
-      authForm.addEventListener("submit", handleLoginSubmit);
-    }
 
     // Xử lý sự kiện Đăng xuất
     const btnLogout = document.getElementById("btn-logout");
@@ -409,7 +424,7 @@ function identifyUserRole(user) {
 }
 
 async function handleLoginSubmit(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
   const emailInput = document.getElementById("login-email");
   const passInput = document.getElementById("login-password");
   const errorMsg = document.getElementById("login-error-msg");
@@ -421,6 +436,15 @@ async function handleLoginSubmit(e) {
   const password = passInput.value;
 
   if (errorMsg) errorMsg.classList.add("hidden");
+
+  if (typeof firebase === "undefined" || !firebase.auth) {
+    if (errorMsg) {
+      errorMsg.textContent = "Chưa kết nối được với Firebase. Hãy kiểm tra kết nối mạng của bạn.";
+      errorMsg.classList.remove("hidden");
+    }
+    return;
+  }
+
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = `<span>⏳</span> Đang xác thực...`;
@@ -428,7 +452,7 @@ async function handleLoginSubmit(e) {
 
   try {
     await firebase.auth().signInWithEmailAndPassword(email, password);
-    // Thành công -> onAuthStateChanged sẽ tự động xử lý
+    // Thành công -> onAuthStateChanged sẽ tự động đóng modal và vào trang chủ
   } catch (err) {
     console.error("Đăng nhập thất bại:", err);
     let msg = "Email hoặc mật khẩu không chính xác.";
@@ -436,6 +460,8 @@ async function handleLoginSubmit(e) {
       msg = "Tài khoản hoặc mật khẩu không đúng. Hãy kiểm tra lại tài khoản Firebase của bạn.";
     } else if (err.code === "auth/too-many-requests") {
       msg = "Bạn đã thử đăng nhập quá nhiều lần. Hãy đợi một chút và thử lại.";
+    } else if (err.code === "auth/network-request-failed") {
+      msg = "Lỗi kết nối mạng tới Firebase. Hãy kiểm tra kết nối Internet.";
     } else {
       msg = err.message;
     }

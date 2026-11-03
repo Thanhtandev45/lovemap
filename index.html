@@ -517,7 +517,7 @@
         <p class="modal-subtitle">Dành riêng cho Tân & Trân</p>
       </div>
 
-      <form id="auth-form" class="modal-form">
+      <form id="auth-form" class="modal-form" onsubmit="event.preventDefault();">
         <div class="input-group">
           <label for="login-email">Email tài khoản:</label>
           <input type="email" id="login-email" class="text-input" placeholder="nhapemail@cuaban.com" required autocomplete="email">
